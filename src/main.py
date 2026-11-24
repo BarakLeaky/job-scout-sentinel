@@ -13,15 +13,19 @@ def run():
     print(f"Loaded {len(seen_jobs)} previously seen job(s).")
 
     current_jobs = fetch_jobs()
-
     new_jobs = [job for job in current_jobs if job["url"] not in seen_jobs]
 
     if new_jobs:
         print(f"{len(new_jobs)} new job(s) found!")
+
+        # Send first. Only mark jobs as seen after successful delivery,
+        # so a temporary email failure does not permanently lose alerts.
+        send_email(new_jobs)
+
         for job in new_jobs:
             seen_jobs.add(job["url"])
         save_seen_jobs(seen_jobs)
-        send_email(new_jobs)
+        print(f"Saved {len(new_jobs)} newly notified job(s).")
     else:
         print("No new jobs found.")
 
